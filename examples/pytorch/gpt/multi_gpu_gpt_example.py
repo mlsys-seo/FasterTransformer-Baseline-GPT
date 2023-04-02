@@ -190,14 +190,6 @@ def main():
     comm.initialize_model_parallel(args.tensor_para_size, args.pipeline_para_size)
     rank = comm.get_rank()
 
-    batch_size = max_batch_size
-    start_ids = [torch.IntTensor([end_id for _ in range(args.input_len)])] * batch_size
-
-    start_lengths = [len(ids) for ids in start_ids]
-
-    start_ids = pad_sequence(start_ids, batch_first=True, padding_value=end_id)
-    start_lengths = torch.IntTensor(start_lengths)
-
     # Prepare model.
     gpt = ParallelGPT(head_num, size_per_head, vocab_size, start_id, end_id,
                         layer_num, max_seq_len, tensor_para_size, pipeline_para_size,
@@ -211,24 +203,32 @@ def main():
     if not gpt.load(ckpt_path=args.ckpt_path):
         print("[WARNING] Checkpoint file not found. Model loading is skipped.")
 
-
-    infer_decode_args = dict(
-        beam_width=beam_width,
-        top_k=top_k * torch.ones(batch_size, dtype=torch.int32),
-        top_p=top_p * torch.ones(batch_size, dtype=torch.float32),
-        temperature=temperature * torch.ones(batch_size, dtype=torch.float32),
-        repetition_penalty=None,
-        presence_penalty=None,
-        beam_search_diversity_rate=beam_search_diversity_rate * torch.ones(batch_size, dtype=torch.float32),
-        len_penalty=len_penalty * torch.ones(size=[batch_size], dtype=torch.float32),
-        bad_words_list=None,
-        min_length=min_length * torch.ones(size=[batch_size], dtype=torch.int32),
-        random_seed=torch.zeros([batch_size], dtype=torch.int64)
-    )
-
     time_data = {}
     for _BATCH in range(args.end_batch_size, args.start_batch_size - 1, -args.batch_size_hop):
         time_list = []
+        
+        batch_size = _BATCH
+        start_ids = [torch.IntTensor([end_id for _ in range(args.input_len)])] * batch_size
+
+        start_lengths = [len(ids) for ids in start_ids]
+
+        start_ids = pad_sequence(start_ids, batch_first=True, padding_value=end_id)
+        start_lengths = torch.IntTensor(start_lengths)
+        
+        infer_decode_args = dict(
+            beam_width=beam_width,
+            top_k=top_k * torch.ones(batch_size, dtype=torch.int32),
+            top_p=top_p * torch.ones(batch_size, dtype=torch.float32),
+            temperature=temperature * torch.ones(batch_size, dtype=torch.float32),
+            repetition_penalty=None,
+            presence_penalty=None,
+            beam_search_diversity_rate=beam_search_diversity_rate * torch.ones(batch_size, dtype=torch.float32),
+            len_penalty=len_penalty * torch.ones(size=[batch_size], dtype=torch.float32),
+            bad_words_list=None,
+            min_length=min_length * torch.ones(size=[batch_size], dtype=torch.int32),
+            random_seed=torch.zeros([batch_size], dtype=torch.int64)
+        )
+        
         for _ in range(args.profile_iters):
             if rank == 0:
                 start, stop = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
@@ -253,10 +253,10 @@ def main():
             time_data[_BATCH] = time_
             print(f"Batch {_BATCH} : {time_}")
     
-    # if rank == 0:
-    #     time_data = dict(sorted(time_data.items()))
-    #     with open(f"{args.save_path}", 'w') as f:
-    #         json.dump(time_data, f, indent=4)
+    if rank == 0:
+        time_data = dict(sorted(time_data.items()))
+        with open(f"{args.save_path}", 'w') as f:
+            json.dump(time_data, f, indent=4)
     
 if __name__ == '__main__':
     main()
