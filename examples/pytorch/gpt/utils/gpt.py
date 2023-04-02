@@ -177,7 +177,7 @@ class GPTWeights:
                 self.inference_data_type])] * layer_num)   # adaptor2_bias2
 
         # Initialization
-        self._map(lambda w: torch.nn.init.normal_(w, mean=0., std=1.))
+        # self._map(lambda w: torch.nn.init.normal_(w, mean=0., std=1.))
 
         if (self.int8_mode != 0):
             self.int8_w.extend([torch.zeros(global_hidden_units, local_hidden_units *
@@ -273,41 +273,41 @@ class GPTWeights:
                 return torch.from_numpy(np.fromfile(file_path, dtype=self.weights_data_type)).to(str_type_map[self.inference_data_type])
             else:
                 return torch.empty(0).to(str_type_map[self.inference_data_type])
-        w.extend([load_to_torch(f"{ckpt_path}/model.layers.{i}.input_layernorm.weight.bin", is_load(i))
+        w.extend([load_to_torch(f"{ckpt_path}/model.layers.0.input_layernorm.weight.bin", is_load(i))
                  for i in range(self.layer_num)])
-        w.extend([load_to_torch(f"{ckpt_path}/model.layers.{i}.input_layernorm.bias.bin", is_load(i))
+        w.extend([load_to_torch(f"{ckpt_path}/model.layers.0.input_layernorm.bias.bin", is_load(i))
                  for i in range(self.layer_num)])
         w.extend([load_to_torch(
-            f"{ckpt_path}/model.layers.{i}.attention.query_key_value.weight.{tp_rank}.bin", is_load(i)) for i in range(self.layer_num)])
+            f"{ckpt_path}/model.layers.0.attention.query_key_value.weight.{tp_rank}.bin", is_load(i)) for i in range(self.layer_num)])
         w.extend([load_to_torch(
-            f"{ckpt_path}/model.layers.{i}.attention.query_key_value.bias.{tp_rank}.bin", is_load(i)) for i in range(self.layer_num)])
-        w.extend([load_to_torch(f"{ckpt_path}/model.layers.{i}.attention.dense.weight.{tp_rank}.bin",
+            f"{ckpt_path}/model.layers.0.attention.query_key_value.bias.{tp_rank}.bin", is_load(i)) for i in range(self.layer_num)])
+        w.extend([load_to_torch(f"{ckpt_path}/model.layers.0.attention.dense.weight.{tp_rank}.bin",
                  is_load(i)) for i in range(self.layer_num)])
-        w.extend([load_to_torch(f"{ckpt_path}/model.layers.{i}.attention.dense.bias.bin", is_load(i))
+        w.extend([load_to_torch(f"{ckpt_path}/model.layers.0.attention.dense.bias.bin", is_load(i))
                  for i in range(self.layer_num)])
-        w.extend([load_to_torch(f"{ckpt_path}/model.layers.{i}.post_attention_layernorm.weight.bin",
+        w.extend([load_to_torch(f"{ckpt_path}/model.layers.0.post_attention_layernorm.weight.bin",
                  is_load(i)) for i in range(self.layer_num)])
-        w.extend([load_to_torch(f"{ckpt_path}/model.layers.{i}.post_attention_layernorm.bias.bin",
+        w.extend([load_to_torch(f"{ckpt_path}/model.layers.0.post_attention_layernorm.bias.bin",
                  is_load(i)) for i in range(self.layer_num)])
         w.extend([load_to_torch(
-                f"{ckpt_path}/model.layers.{i}.mlp.dense_h_to_4h.weight.{tp_rank}.bin" \
-                    if os.path.isfile(f"{ckpt_path}/model.layers.{i}.mlp.dense_h_to_4h.weight.{tp_rank}.bin") \
-                        else f"{ckpt_path}/model.layers.{i}.mlp.moe.experts.dense_h_to_4h.weight.{tp_rank}.bin",
+                f"{ckpt_path}/model.layers.0.mlp.dense_h_to_4h.weight.{tp_rank}.bin" \
+                    if os.path.isfile(f"{ckpt_path}/model.layers.0.mlp.dense_h_to_4h.weight.{tp_rank}.bin") \
+                        else f"{ckpt_path}/model.layers.0.mlp.moe.experts.dense_h_to_4h.weight.{tp_rank}.bin",
                 is_load(i)) for i in range(self.layer_num)])
         w.extend([load_to_torch(
-                f"{ckpt_path}/model.layers.{i}.mlp.dense_h_to_4h.bias.{tp_rank}.bin" \
-                    if os.path.isfile(f"{ckpt_path}/model.layers.{i}.mlp.dense_h_to_4h.bias.{tp_rank}.bin") \
-                        else f"{ckpt_path}/model.layers.{i}.mlp.moe.experts.dense_h_to_4h.bias.{tp_rank}.bin",
+                f"{ckpt_path}/model.layers.0.mlp.dense_h_to_4h.bias.{tp_rank}.bin" \
+                    if os.path.isfile(f"{ckpt_path}/model.layers.0.mlp.dense_h_to_4h.bias.{tp_rank}.bin") \
+                        else f"{ckpt_path}/model.layers.0.mlp.moe.experts.dense_h_to_4h.bias.{tp_rank}.bin",
                 is_load(i)) for i in range(self.layer_num)])
         w.extend([load_to_torch(
-                f"{ckpt_path}/model.layers.{i}.mlp.dense_4h_to_h.weight.{tp_rank}.bin" \
-                    if os.path.isfile(f"{ckpt_path}/model.layers.{i}.mlp.dense_4h_to_h.weight.{tp_rank}.bin") \
-                        else f"{ckpt_path}/model.layers.{i}.mlp.moe.experts.dense_4h_to_h.weight.{tp_rank}.bin",
+                f"{ckpt_path}/model.layers.0.mlp.dense_4h_to_h.weight.{tp_rank}.bin" \
+                    if os.path.isfile(f"{ckpt_path}/model.layers.0.mlp.dense_4h_to_h.weight.{tp_rank}.bin") \
+                        else f"{ckpt_path}/model.layers.0.mlp.moe.experts.dense_4h_to_h.weight.{tp_rank}.bin",
                 is_load(i)) for i in range(self.layer_num)])
         w.extend([load_to_torch(
-                f"{ckpt_path}/model.layers.{i}.mlp.dense_4h_to_h.bias.bin" \
-                    if os.path.isfile(f"{ckpt_path}/model.layers.{i}.mlp.dense_4h_to_h.bias.bin") \
-                        else f"{ckpt_path}/model.layers.{i}.mlp.moe.experts.dense_4h_to_h.bias.bin",
+                f"{ckpt_path}/model.layers.0.mlp.dense_4h_to_h.bias.bin" \
+                    if os.path.isfile(f"{ckpt_path}/model.layers.0.mlp.dense_4h_to_h.bias.bin") \
+                        else f"{ckpt_path}/model.layers.0.mlp.moe.experts.dense_4h_to_h.bias.bin",
                 is_load(i)) for i in range(self.layer_num)])
 
         if self.has_pre_decoder_layernorm:
@@ -335,52 +335,52 @@ class GPTWeights:
 
         gate_list = []
         for i in range(self.layer_num):
-            if (os.path.isfile(f"{ckpt_path}/model.layers.{i}.mlp.moe.gate.wg.weight.bin")):
-                gate_list.append(load_to_torch(f"{ckpt_path}/model.layers.{i}.mlp.moe.gate.wg.weight.bin", True))
+            if (os.path.isfile(f"{ckpt_path}/model.layers.0.mlp.moe.gate.wg.weight.bin")):
+                gate_list.append(load_to_torch(f"{ckpt_path}/model.layers.0.mlp.moe.gate.wg.weight.bin", True))
             else:
-                gate_list.append(load_to_torch(f"{ckpt_path}/model.layers.{i}.mlp.moe.gate.wg.weight.bin", False))
+                gate_list.append(load_to_torch(f"{ckpt_path}/model.layers.0.mlp.moe.gate.wg.weight.bin", False))
         w.extend(gate_list)
 
         if self.has_adapters:
             w.extend([load_to_torch(
-                    f"{ckpt_path}/model.layers.{i}.after_attention_adapter.dense_h_to_4h.weight.{tp_rank}.bin" \
-                        if os.path.isfile(f"{ckpt_path}/model.layers.{i}.after_attention_adapter.dense_h_to_4h.weight.{tp_rank}.bin") \
-                            else f"{ckpt_path}/model.layers.{i}.after_attention_adapter.moe.experts.dense_h_to_4h.weight.{tp_rank}.bin",
+                    f"{ckpt_path}/model.layers.0.after_attention_adapter.dense_h_to_4h.weight.{tp_rank}.bin" \
+                        if os.path.isfile(f"{ckpt_path}/model.layers.0.after_attention_adapter.dense_h_to_4h.weight.{tp_rank}.bin") \
+                            else f"{ckpt_path}/model.layers.0.after_attention_adapter.moe.experts.dense_h_to_4h.weight.{tp_rank}.bin",
                     is_load(i)) for i in range(self.layer_num)])
             w.extend([load_to_torch(
-                    f"{ckpt_path}/model.layers.{i}.after_attention_adapter.dense_h_to_4h.bias.{tp_rank}.bin" \
-                        if os.path.isfile(f"{ckpt_path}/model.layers.{i}.after_attention_adapter.dense_h_to_4h.bias.{tp_rank}.bin") \
-                            else f"{ckpt_path}/model.layers.{i}.after_attention_adapter.moe.experts.dense_h_to_4h.bias.{tp_rank}.bin",
+                    f"{ckpt_path}/model.layers.0.after_attention_adapter.dense_h_to_4h.bias.{tp_rank}.bin" \
+                        if os.path.isfile(f"{ckpt_path}/model.layers.0.after_attention_adapter.dense_h_to_4h.bias.{tp_rank}.bin") \
+                            else f"{ckpt_path}/model.layers.0.after_attention_adapter.moe.experts.dense_h_to_4h.bias.{tp_rank}.bin",
                     is_load(i)) for i in range(self.layer_num)])
             w.extend([load_to_torch(
-                    f"{ckpt_path}/model.layers.{i}.after_attention_adapter.dense_4h_to_h.weight.{tp_rank}.bin" \
-                        if os.path.isfile(f"{ckpt_path}/model.layers.{i}.after_attention_adapter.dense_4h_to_h.weight.{tp_rank}.bin") \
-                            else f"{ckpt_path}/model.layers.{i}.after_attention_adapter.moe.experts.dense_4h_to_h.weight.{tp_rank}.bin",
+                    f"{ckpt_path}/model.layers.0.after_attention_adapter.dense_4h_to_h.weight.{tp_rank}.bin" \
+                        if os.path.isfile(f"{ckpt_path}/model.layers.0.after_attention_adapter.dense_4h_to_h.weight.{tp_rank}.bin") \
+                            else f"{ckpt_path}/model.layers.0.after_attention_adapter.moe.experts.dense_4h_to_h.weight.{tp_rank}.bin",
                     is_load(i)) for i in range(self.layer_num)])
             w.extend([load_to_torch(
-                    f"{ckpt_path}/model.layers.{i}.after_attention_adapter.dense_4h_to_h.bias.bin" \
-                        if os.path.isfile(f"{ckpt_path}/model.layers.{i}.after_attention_adapter.dense_4h_to_h.bias.bin") \
-                            else f"{ckpt_path}/model.layers.{i}.after_attention_adapter.moe.experts.dense_4h_to_h.bias.bin",
+                    f"{ckpt_path}/model.layers.0.after_attention_adapter.dense_4h_to_h.bias.bin" \
+                        if os.path.isfile(f"{ckpt_path}/model.layers.0.after_attention_adapter.dense_4h_to_h.bias.bin") \
+                            else f"{ckpt_path}/model.layers.0.after_attention_adapter.moe.experts.dense_4h_to_h.bias.bin",
                     is_load(i)) for i in range(self.layer_num)])
             w.extend([load_to_torch(
-                    f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.dense_h_to_4h.weight.{tp_rank}.bin" \
-                        if os.path.isfile(f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.dense_h_to_4h.weight.{tp_rank}.bin") \
-                            else f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.moe.experts.dense_h_to_4h.weight.{tp_rank}.bin",
+                    f"{ckpt_path}/model.layers.0.after_ffn_adapter.dense_h_to_4h.weight.{tp_rank}.bin" \
+                        if os.path.isfile(f"{ckpt_path}/model.layers.0.after_ffn_adapter.dense_h_to_4h.weight.{tp_rank}.bin") \
+                            else f"{ckpt_path}/model.layers.0.after_ffn_adapter.moe.experts.dense_h_to_4h.weight.{tp_rank}.bin",
                     is_load(i)) for i in range(self.layer_num)])
             w.extend([load_to_torch(
-                    f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.dense_h_to_4h.bias.{tp_rank}.bin" \
-                        if os.path.isfile(f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.dense_h_to_4h.bias.{tp_rank}.bin") \
-                            else f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.moe.experts.dense_h_to_4h.bias.{tp_rank}.bin",
+                    f"{ckpt_path}/model.layers.0.after_ffn_adapter.dense_h_to_4h.bias.{tp_rank}.bin" \
+                        if os.path.isfile(f"{ckpt_path}/model.layers.0.after_ffn_adapter.dense_h_to_4h.bias.{tp_rank}.bin") \
+                            else f"{ckpt_path}/model.layers.0.after_ffn_adapter.moe.experts.dense_h_to_4h.bias.{tp_rank}.bin",
                     is_load(i)) for i in range(self.layer_num)])
             w.extend([load_to_torch(
-                    f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.dense_4h_to_h.weight.{tp_rank}.bin" \
-                        if os.path.isfile(f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.dense_4h_to_h.weight.{tp_rank}.bin") \
-                            else f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.moe.experts.dense_4h_to_h.weight.{tp_rank}.bin",
+                    f"{ckpt_path}/model.layers.0.after_ffn_adapter.dense_4h_to_h.weight.{tp_rank}.bin" \
+                        if os.path.isfile(f"{ckpt_path}/model.layers.0.after_ffn_adapter.dense_4h_to_h.weight.{tp_rank}.bin") \
+                            else f"{ckpt_path}/model.layers.0.after_ffn_adapter.moe.experts.dense_4h_to_h.weight.{tp_rank}.bin",
                     is_load(i)) for i in range(self.layer_num)])
             w.extend([load_to_torch(
-                    f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.dense_4h_to_h.bias.bin" \
-                        if os.path.isfile(f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.dense_4h_to_h.bias.bin") \
-                            else f"{ckpt_path}/model.layers.{i}.after_ffn_adapter.moe.experts.dense_4h_to_h.bias.bin",
+                    f"{ckpt_path}/model.layers.0.after_ffn_adapter.dense_4h_to_h.bias.bin" \
+                        if os.path.isfile(f"{ckpt_path}/model.layers.0.after_ffn_adapter.dense_4h_to_h.bias.bin") \
+                            else f"{ckpt_path}/model.layers.0.after_ffn_adapter.moe.experts.dense_4h_to_h.bias.bin",
                     is_load(i)) for i in range(self.layer_num)])
 
         assert len(self.w) == len(w)
@@ -396,7 +396,7 @@ class GPTWeights:
         except RuntimeError:
             raise RuntimeError(
                 f"head_num, size_per_head, vocab_size, and max_seq_len must be the same as the ones during training "
-                f"(idx: {i} expected shape: {self.w[i].shape} got shape: {w[i].shape})."
+                f"(idx: 0 expected shape: {self.w[i].shape} got shape: {w[i].shape})."
             )
 
         # transpose calibrate quantize the kernel

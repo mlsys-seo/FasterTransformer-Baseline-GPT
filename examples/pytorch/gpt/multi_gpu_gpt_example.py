@@ -17,6 +17,7 @@ import argparse
 import configparser
 import os
 import sys
+import json
 
 import torch
 from torch.nn.utils.rnn import pad_sequence
@@ -30,6 +31,8 @@ from examples.pytorch.gpt.utils.parallel_gpt import ParallelGPT
 @torch.no_grad()
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--profile_iters', type=int, default=50, metavar='NUMBER',
+                        help='Candidate (k) value of top k sampling in decoding. Default is 1.')
     parser.add_argument('--layer_num', type=int, default=24,
                         help='number of layers')
     parser.add_argument('--input_len', type=int, default=1,
@@ -117,6 +120,8 @@ def main():
                              ' 0: do not return the cumulative log probs '
                              ' 1: return the cumulative log probs of generated sequences'
                              ' 2: return the cumulative log probs of sequences')
+    parser.add_argument('--save_path', type=str, default="/workspace/code/multi/model_config", metavar='STRING',
+                        help='the path of FasterTransformer pytorch t5 op library.')
     args = parser.parse_args()
 
     ckpt_config = configparser.ConfigParser()
@@ -246,6 +251,12 @@ def main():
             time_list = time_list[:-1]
             time_ = sum(time_list) / len(time_list)
             time_data[_BATCH] = time_
+            print(f"Batch {_BATCH} : {time_}")
+    
+    # if rank == 0:
+    #     time_data = dict(sorted(time_data.items()))
+    #     with open(f"{args.save_path}", 'w') as f:
+    #         json.dump(time_data, f, indent=4)
     
 if __name__ == '__main__':
     main()
