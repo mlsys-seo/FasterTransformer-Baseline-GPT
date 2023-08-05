@@ -163,7 +163,7 @@ def main():
         moe_layer_index = []
         moe_k = 0
 
-    layer_num = args.layer_num // args.tensor_para_size
+    layer_num = args.layer_num
     output_len = args.output_len
     head_num = args.head_num
     size_per_head = args.size_per_head
@@ -204,7 +204,8 @@ def main():
         print("[WARNING] Checkpoint file not found. Model loading is skipped.")
 
     time_data = {}
-    for _BATCH in range(args.end_batch_size, args.start_batch_size - 1, -args.batch_size_hop):
+    for _BATCH in range(args.start_batch_size, args.end_batch_size + 1, args.batch_size_hop):
+        is_oom = False
         time_list = []
         
         batch_size = _BATCH
@@ -230,22 +231,32 @@ def main():
         )
         
         for _ in range(args.profile_iters):
-            if rank == 0:
-                start, stop = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
-                start.record()
             
-            gpt(start_ids,
-                start_lengths,
-                output_len,
-                return_output_length=return_output_length,
-                return_cum_log_probs=return_cum_log_probs,
-                **infer_decode_args)
-            
-            if rank == 0:
-                stop.record()
-                torch.cuda.synchronize()
-                time_list.append(start.elapsed_time(stop))
+            try:
+                if rank == 0:
+                    start, stop = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
+                    start.record()
                 
+                gpt(start_ids,
+                    start_lengths,
+                    output_len,
+                    return_output_length=return_output_length,
+                    return_cum_log_probs=return_cum_log_probs,
+                    **infer_decode_args)
+                
+                if rank == 0:
+                    stop.record()
+                    torch.cuda.synchronize()
+                    time_list.append(start.elapsed_time(stop))
+            
+            except:
+                print("OOM")
+                is_oom = True
+                break
+        
+        if is_oom:
+            break
+        
         if rank == 0:
             time_list.sort()
             time_list = time_list[:-1]

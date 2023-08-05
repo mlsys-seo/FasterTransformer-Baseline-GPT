@@ -1,0 +1,7 @@
+{
+    "model_type": "gpt",
+    "num_hidden_layers": 48,
+    "hidden_size": 8092,
+    "num_attention_heads": 40,
+    "intermediate_size": 32368
+}

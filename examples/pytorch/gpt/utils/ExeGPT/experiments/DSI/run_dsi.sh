@@ -1,0 +1,1 @@
+deepspeed --num_gpus 4 run_dsi.py
